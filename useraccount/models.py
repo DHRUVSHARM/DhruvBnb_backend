@@ -12,7 +12,7 @@ from django.db import models
 class CustomUserManager(UserManager):
     def _create_user(
         self,
-        username: str,
+        name: str,
         email: str | None = ...,
         password: str | None = ...,
         **extra_fields: Any
@@ -22,34 +22,26 @@ class CustomUserManager(UserManager):
             raise ValueError("valid email not specified ")
 
         email = self.normalize_email(email)
-        user = self.model(email=email, name=username, **extra_fields)
+        user = self.model(email=email, name=name, **extra_fields)
         user.set_password(password)
         user.save(using=self.db)
 
         return user
 
     def create_user(
-        self,
-        username: str,
-        email: str | None,
-        password: str | None,
-        **extra_fields: Any
+        self, name: str, email: str | None, password: str | None, **extra_fields: Any
     ) -> Any:
         # this fn is used to create a general user
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
-        return self._create_user(username, email, password, **extra_fields)
+        return self._create_user(name, email, password, **extra_fields)
 
     def create_superuser(
-        self,
-        username: str,
-        email: str | None,
-        password: str | None,
-        **extra_fields: Any
+        self, name: str, email: str | None, password: str | None, **extra_fields: Any
     ) -> Any:
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        return self._create_user(username, email, password, **extra_fields)
+        return self._create_user(name, email, password, **extra_fields)
 
 
 class User(AbstractBaseUser, PermissionsMixin):

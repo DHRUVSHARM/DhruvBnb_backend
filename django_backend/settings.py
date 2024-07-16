@@ -58,9 +58,9 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-"""
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
+    "http://127.0.0.1:9000",
     "http://127.0.0.1:3000",
     "http://64.226.81.32",
     "http://64.226.81.32:1337",
@@ -68,13 +68,14 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ORIGINS_WHITELIST = [
     "http://127.0.0.1:8000",
+    "http://127.0.0.1:9000",
     "http://127.0.0.1:3000",
     "http://64.226.81.32",
     "http://64.226.81.32:1337",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-"""
+
 
 REST_AUTH = {"USE_JWT": True, "JWT_AUTH_HTTPONLY": False}
 
@@ -187,3 +188,33 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# we will setup logging
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
+        },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "property": {
+            "handlers": ["file", "console"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
