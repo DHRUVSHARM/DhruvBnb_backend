@@ -15,7 +15,7 @@ class CustomUserManager(UserManager):
         name: str,
         email: str | None = ...,
         password: str | None = ...,
-        **extra_fields: Any
+        **extra_fields: Any,
     ) -> Any:
         # in this function we will set the model for the user , we will sve the email and username among other fields
         if not email:
@@ -64,3 +64,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = [
         "name",
     ]
+
+    def avatar_url(self):
+        if self.avatar:
+            return ""
+        else:
+            return f"{settings.WEBSITE_URL}{self.image.url}"
