@@ -6,7 +6,11 @@ from rest_framework.decorators import (
 )
 
 from .models import Property, Reservation
-from .serializers import PropertiesListSerializer, PropertiesDetailSerializer
+from .serializers import (
+    PropertiesListSerializer,
+    PropertiesDetailSerializer,
+    ReservationListSerializer,
+)
 from .forms import PropertyForm
 
 import logging
@@ -40,6 +44,20 @@ def properties_detail(request, pk):
     return JsonResponse(serialized_data.data)
 
 
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([])
+def property_reservations(request, pk):
+    # this endpoint will take the property info from the url and will use it to get all reservations existing on it
+
+    property = Property.objects.get(pk=pk)
+    reservations = property.reservations.all()
+
+    serialized_data = ReservationListSerializer(reservations, many=True)
+
+    return JsonResponse(serialized_data.data)
+
+
 @api_view(["POST", "FILES"])
 def create_property(request):
     form = PropertyForm(request.POST, request.FILES)
@@ -65,6 +83,10 @@ def book_property(request, pk):
         total_price = request.POST.get("total_price", "")
         guests = request.POST.get("guests", "")
 
+        logger.debug("***************************************************")
+        logger.debug("the user object got from url is : %s", request.user)
+        logger.debug("***************************************************")
+
         property = Property.objects.get(pk=pk)
         reservation = Reservation.objects.create(
             property=property,
@@ -76,5 +98,8 @@ def book_property(request, pk):
             created_by=request.user,
         )
 
+        return JsonResponse({"success": True})
+
     except Exception as e:
         print("Error ", e)
+        return JsonResponse({"success": False, "error": str(e)})
