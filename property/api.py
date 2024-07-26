@@ -55,7 +55,11 @@ def property_reservations(request, pk):
 
     serialized_data = ReservationListSerializer(reservations, many=True)
 
-    return JsonResponse(serialized_data.data)
+    logger.debug("***************************************************")
+    logger.debug("the reservation object is : %s", serialized_data.data)
+    logger.debug("***************************************************")
+
+    return JsonResponse(serialized_data.data, safe=False)
 
 
 @api_view(["POST", "FILES"])
