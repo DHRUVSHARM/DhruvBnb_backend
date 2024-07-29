@@ -16,6 +16,8 @@ class Property(models.Model):
     bathrooms = models.IntegerField()
     guests = models.IntegerField()
     country = models.CharField(max_length=255)
+    # many to many relation
+    favorited = models.ManyToManyField(User, related_name="favorites", blank=True)
     country_code = models.CharField(max_length=10)
     category = models.CharField(max_length=255)
 

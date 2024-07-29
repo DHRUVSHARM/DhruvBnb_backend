@@ -23,7 +23,15 @@ logger = logging.getLogger("property")
 @permission_classes([])
 def property_list(request):
     logger.debug("property_list view called")  # Add log message
-    properties = Property.objects.all()
+
+    landlord_id = request.GET.get("landlord_id", "")
+
+    if landlord_id:
+        logger.debug("property_list for landlord : %s", landlord_id)  # Add log message
+        properties = Property.objects.filter(landlord=landlord_id)
+    else:
+        properties = Property.objects.all()
+
     serializer = PropertiesListSerializer(properties, many=True)
 
     logger.debug("got the properites count : %s", len(properties))  # Add log message
@@ -107,3 +115,18 @@ def book_property(request, pk):
     except Exception as e:
         print("Error ", e)
         return JsonResponse({"success": False, "error": str(e)})
+
+
+@api_view(["POST"])
+def toggle_favorite(request, pk):
+    # endpoint used to set favourite
+    property = Property.objects.get(pk=pk)
+
+    if request.user in property.favorited.all():
+        # check if the user is one of those who favorited the property
+        property.favorited.remove(request.user)
+        return JsonResponse({"is_favorite": False})
+    else:
+        # otherwise add the user to the list of people who favorited the property
+        property.favorited.add(request.user)
+        return JsonResponse({"is_favorite": True})
