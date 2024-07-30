@@ -12,6 +12,8 @@ from .serializers import (
     ReservationListSerializer,
 )
 from .forms import PropertyForm
+from useraccount.models import User
+from rest_framework_simplejwt.tokens import AccessToken
 
 import logging
 
@@ -24,13 +26,41 @@ logger = logging.getLogger("property")
 def property_list(request):
     logger.debug("property_list view called")  # Add log message
 
+    # get the user object based on the token
+    try:
+        token = request.META["HTTP_AUTHORIZATION"].split("Bearer ")[1]
+        token = AccessToken(token)
+        user_id = token.payload["user_id"]
+        user = User.objects.get(pk=user_id)
+    except Exception as e:
+        user = None
+
+    # print("checking if user is authed or not ... ", user)
+
+    # if user is not none (ie ; logged in ) then we can get the favourites
+    favourites = []
+    properties = Property.objects.all()
+
+    if user:
+        for property in properties:
+            if user in property.favorited.all():
+                favourites.append(property.id)
+        logger.debug("the favourites for this user is : %s /n/n", favourites)
+    else:
+        logger.debug("user not logged in ..")
+
     landlord_id = request.GET.get("landlord_id", "")
+    is_favorites = request.GET.get("is_favorites", "")
 
     if landlord_id:
         logger.debug("property_list for landlord : %s", landlord_id)  # Add log message
         properties = Property.objects.filter(landlord=landlord_id)
+    elif is_favorites:
+        # this is like a sql query with where in  , here properties , where user in favorited
+        properties = Property.objects.filter(favorited__in=[user])
     else:
-        properties = Property.objects.all()
+        # default pick all properties ..
+        pass
 
     serializer = PropertiesListSerializer(properties, many=True)
 
@@ -38,7 +68,7 @@ def property_list(request):
     logger.debug("*********************************************************")
     logger.debug(f"the property query set returned : {properties}")
 
-    return JsonResponse({"data": serializer.data})
+    return JsonResponse({"data": serializer.data, "favourites": favourites})
 
 
 @api_view(["GET"])
