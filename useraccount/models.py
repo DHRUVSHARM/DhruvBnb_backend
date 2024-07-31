@@ -65,6 +65,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         "name",
     ]
 
+    def get_short_name(self):
+        return self.name if self.name else ""
+
     def avatar_url(self):
         if self.avatar:
             return ""
