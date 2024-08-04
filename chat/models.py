@@ -21,7 +21,7 @@ class ConversationMessage(models.Model):
     # this model represents conversation messages from a conversation
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     conversation = models.ForeignKey(
-        User, related_name="messages", on_delete=models.CASCADE
+        Conversation, related_name="messages", on_delete=models.CASCADE
     )
     body = models.TextField()
     sent_to = models.ForeignKey(
