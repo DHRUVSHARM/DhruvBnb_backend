@@ -52,15 +52,52 @@ def property_list(request):
     landlord_id = request.GET.get("landlord_id", "")
     is_favorites = request.GET.get("is_favorites", "")
 
+    # optional filters for searching
+    country = request.GET.get("country" , '')
+    category = request.GET.get("category" , '')
+    checkin_date = request.GET.get("checkIn" , '')
+    checkout_date = request.GET.get("checkOut" , '')
+    bedrooms = request.GET.get("numBedrooms" , '')
+    guests = request.GET.get("numGuests" , '')
+    bathrooms = request.GET.get("numBathrooms" , '')
+
+    if checkin_date and checkout_date:
+        # alreaady reserved properties have to be hidden in the list view
+        exact_matches = Reservation.objects.filter(start_date = checkin_date) | Reservation.objects.filter(end_date = checkout_date)
+        overlap_matches = Reservation.objects.filter(start_date__lte = checkout_date , end_date__gte=checkin_date)
+        all_matches = []
+
+        for reservation in exact_matches | overlap_matches:
+            all_matches.append(reservation.property_id)
+        
+        properties = properties.exclude(id__in = all_matches)
+
     if landlord_id:
         logger.debug("property_list for landlord : %s", landlord_id)  # Add log message
-        properties = Property.objects.filter(landlord=landlord_id)
-    elif is_favorites:
+        properties = properties.filter(landlord=landlord_id)
+
+    if is_favorites:
         # this is like a sql query with where in  , here properties , where user in favorited
-        properties = Property.objects.filter(favorited__in=[user])
-    else:
-        # default pick all properties ..
-        pass
+        properties = properties.filter(favorited__in=[user])
+
+    if guests:
+        properties = properties.filter(guests__gte=guests)
+    
+    
+    if bedrooms:
+        properties = properties.filter(bedrooms__gte=bedrooms)
+    
+    
+    if bathrooms:
+        properties = properties.filter(bathrooms__gte=bathrooms)
+    
+    
+    if country:
+        properties = properties.filter(country=country)
+    
+    if category and category != 'undefined':
+        properties = properties.filter(category = category)
+
 
     serializer = PropertiesListSerializer(properties, many=True)
 
